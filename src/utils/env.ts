@@ -1,7 +1,6 @@
 import * as Joi from 'joi'
 
 export const isENV = (env: 'dev' | 'prod' | 'test') => {
-  console.log(process.env.NODE_ENV)
   return process.env.NODE_ENV === env
 }
 

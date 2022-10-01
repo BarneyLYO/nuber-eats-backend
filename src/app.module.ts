@@ -2,9 +2,13 @@ import {
   ApolloDriver,
   ApolloDriverConfig
 } from '@nestjs/apollo'
-import { Module } from '@nestjs/common'
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod
+} from '@nestjs/common'
 import { GraphQLModule } from '@nestjs/graphql'
-import { RestaurantsModule } from './restaurants/restaurants.module'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
 import * as Joi from 'joi'
@@ -13,7 +17,12 @@ import {
   getFromProcessEnvByPrefix,
   isENV
 } from './utils/env'
-import { Restaurant } from './restaurants/entities/restaurants.entity'
+import { UsersModule } from './users/users.module'
+import { User } from './users/entities/user.entity'
+import { JwtModule } from './jwt/jwt.module'
+import { JwtMiddleware } from './jwt/jwt.middleware'
+import { Verification } from './users/entities/verification.entity'
+import { DataSource } from 'typeorm'
 
 @Module({
   imports: [
@@ -23,7 +32,7 @@ import { Restaurant } from './restaurants/entities/restaurants.entity'
       ignoreEnvFile: isENV('prod'),
       validationSchema: Joi.object({
         NODE_ENV: Joi.string()
-          .valid('dev', 'prod')
+          .valid('dev', 'prod', 'test')
           .required(),
         ...generateEnvSchemaValidate(
           [
@@ -35,7 +44,8 @@ import { Restaurant } from './restaurants/entities/restaurants.entity'
             'database'
           ],
           'DB_'
-        )
+        ),
+        PRIVATE_KEY: Joi.string().required()
       })
     }),
     TypeOrmModule.forRoot({
@@ -43,17 +53,39 @@ import { Restaurant } from './restaurants/entities/restaurants.entity'
         before.replace('DB_', '').toLowerCase()
       ),
       synchronize: !isENV('prod'), // update db when the model changes
-      logging: true,
-      entities: [Restaurant]
+      logging: false,
+      entities: [
+        // Restaurant
+        User,
+        Verification
+      ]
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       // autoSchemaFile: join(process.cwd(), 'src/schema.gql')
-      autoSchemaFile: true
+      autoSchemaFile: true,
+      context: ({ req }) => ({ user: req['user'] })
     }),
-    RestaurantsModule
+    // RestaurantsModule,
+    UsersModule,
+    JwtModule.forRoot({
+      privateKey: process.env.PRIVATE_KEY
+    })
   ],
   controllers: [],
   providers: []
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  constructor(private readonly dataSource: DataSource) {}
+
+  public getDataSource(): DataSource {
+    return this.dataSource
+  }
+
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(JwtMiddleware).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL
+    })
+  }
+}
