@@ -27,6 +27,7 @@ import { Restaurant } from './restaurants/entities/restaurants.entity'
 import { Category } from './restaurants/entities/category.entity'
 import { RestaurantsModule } from './restaurants/restaurants.module'
 import { AuthModule } from './auth/auth.module'
+import { Dish } from './restaurants/entities/dish.entity'
 
 @Module({
   imports: [
@@ -63,7 +64,8 @@ import { AuthModule } from './auth/auth.module'
         User,
         Verification,
         Restaurant,
-        Category
+        Category,
+        Dish
       ]
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({

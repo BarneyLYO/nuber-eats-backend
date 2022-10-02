@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { CategoryService } from './category.service'
+import { DishResolver } from './dish.resolver'
 import { Category } from './entities/category.entity'
+import { Dish } from './entities/dish.entity'
 import { Restaurant } from './entities/restaurants.entity'
-import { CategoryRepository } from './repositories/category.repository'
 import {
   CategoryResolver,
   RestaurantsResolver
@@ -12,13 +13,14 @@ import { RestaurantService } from './restaurants.service'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Restaurant, Category])
+    TypeOrmModule.forFeature([Restaurant, Category, Dish])
   ],
   providers: [
     RestaurantsResolver,
     CategoryResolver,
     RestaurantService,
-    CategoryService
+    CategoryService,
+    DishResolver
   ]
 })
 export class RestaurantsModule {}
