@@ -7,6 +7,7 @@ import {
 } from '@nestjs/graphql'
 import { AuthUser } from 'src/auth/auth-user.decorator'
 import { AuthGuard } from 'src/auth/auth.guard'
+import { AnyRole, Roles } from 'src/auth/role.decorator'
 import {
   CreateAccountInput,
   CreateAccountOutput
@@ -32,13 +33,13 @@ export class UsersResolver {
   constructor(private readonly userService: UsersService) {}
 
   @Query(() => User)
-  @UseGuards(AuthGuard)
+  @AnyRole()
   me(@AuthUser() authUser: User) {
     return authUser
   }
 
   @Query(() => userProfileOutput)
-  @UseGuards(AuthGuard)
+  @AnyRole()
   async userProfile(
     @Args() userProfileInput: UserProfileInput
   ) {
@@ -95,7 +96,7 @@ export class UsersResolver {
     }
   }
 
-  @UseGuards(AuthGuard)
+  @AnyRole()
   @Mutation(() => EditProfileOutput)
   async editProfile(
     @AuthUser() authUser: User,
@@ -117,6 +118,7 @@ export class UsersResolver {
     }
   }
 
+  @AnyRole()
   @Mutation(() => VerifyEmailOutput)
   async verifyEmail(
     @Args('input') verifyEmailInput: VerifyEmailInput

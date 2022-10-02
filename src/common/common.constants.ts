@@ -1,1 +1,3 @@
 export const CONFIG_OPTIONS = 'CONFIG_OPTIONS'
+
+export const DECOR_KEY_ROLES = 'ROLES'

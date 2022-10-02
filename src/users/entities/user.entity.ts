@@ -10,10 +10,12 @@ import {
   BeforeInsert,
   BeforeUpdate,
   Column,
-  Entity
+  Entity,
+  OneToMany
 } from 'typeorm'
 import * as Bcrypt from 'bcrypt'
 import { InternalServerErrorException } from '@nestjs/common'
+import { Restaurant } from 'src/restaurants/entities/restaurants.entity'
 
 export enum UserRole {
   Owner,
@@ -23,7 +25,7 @@ export enum UserRole {
 
 registerEnumType(UserRole, { name: 'UserRole' })
 
-@InputType({ isAbstract: true })
+@InputType('UserInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class User extends CoreEntity {
@@ -46,6 +48,13 @@ export class User extends CoreEntity {
   @Column({ default: true })
   @Field(() => Boolean)
   verified: boolean
+
+  @Field(() => [Restaurant])
+  @OneToMany(
+    () => Restaurant,
+    (restaurant) => restaurant.owner
+  )
+  restaurants: Restaurant[]
 
   async checkPassword(aPassword: string) {
     try {

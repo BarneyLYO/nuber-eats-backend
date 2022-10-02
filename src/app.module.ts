@@ -23,6 +23,10 @@ import { JwtModule } from './jwt/jwt.module'
 import { JwtMiddleware } from './jwt/jwt.middleware'
 import { Verification } from './users/entities/verification.entity'
 import { DataSource } from 'typeorm'
+import { Restaurant } from './restaurants/entities/restaurants.entity'
+import { Category } from './restaurants/entities/category.entity'
+import { RestaurantsModule } from './restaurants/restaurants.module'
+import { AuthModule } from './auth/auth.module'
 
 @Module({
   imports: [
@@ -57,7 +61,9 @@ import { DataSource } from 'typeorm'
       entities: [
         // Restaurant
         User,
-        Verification
+        Verification,
+        Restaurant,
+        Category
       ]
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -66,11 +72,13 @@ import { DataSource } from 'typeorm'
       autoSchemaFile: true,
       context: ({ req }) => ({ user: req['user'] })
     }),
-    // RestaurantsModule,
+
+    RestaurantsModule,
     UsersModule,
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY
-    })
+    }),
+    AuthModule
   ],
   controllers: [],
   providers: []
