@@ -1,4 +1,3 @@
-import { UseGuards } from '@nestjs/common'
 import {
   Args,
   Mutation,
@@ -6,8 +5,7 @@ import {
   Resolver
 } from '@nestjs/graphql'
 import { AuthUser } from 'src/auth/auth-user.decorator'
-import { AuthGuard } from 'src/auth/auth.guard'
-import { AnyRole, Roles } from 'src/auth/role.decorator'
+import { AnyRole } from 'src/auth/role.decorator'
 import {
   CreateAccountInput,
   CreateAccountOutput
