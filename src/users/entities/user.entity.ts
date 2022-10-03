@@ -16,6 +16,7 @@ import {
 import * as Bcrypt from 'bcrypt'
 import { InternalServerErrorException } from '@nestjs/common'
 import { Restaurant } from 'src/restaurants/entities/restaurants.entity'
+import { Order } from 'src/orders/entities/order.entity'
 
 export enum UserRole {
   Owner,
@@ -55,6 +56,14 @@ export class User extends CoreEntity {
     (restaurant) => restaurant.owner
   )
   restaurants: Restaurant[]
+
+  @Field(() => [Order])
+  @OneToMany(() => Order, (order) => order.customer)
+  orders: Order[]
+
+  @Field(() => [Order])
+  @OneToMany(() => Order, (order) => order.driver)
+  rides: Order[]
 
   async checkPassword(aPassword: string) {
     try {

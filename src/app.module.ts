@@ -5,8 +5,7 @@ import {
 import {
   MiddlewareConsumer,
   Module,
-  NestModule,
-  RequestMethod
+  NestModule
 } from '@nestjs/common'
 import { GraphQLModule } from '@nestjs/graphql'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -20,7 +19,6 @@ import {
 import { UsersModule } from './users/users.module'
 import { User } from './users/entities/user.entity'
 import { JwtModule } from './jwt/jwt.module'
-import { JwtMiddleware } from './jwt/jwt.middleware'
 import { Verification } from './users/entities/verification.entity'
 import { DataSource } from 'typeorm'
 import { Restaurant } from './restaurants/entities/restaurants.entity'
@@ -28,9 +26,16 @@ import { Category } from './restaurants/entities/category.entity'
 import { RestaurantsModule } from './restaurants/restaurants.module'
 import { AuthModule } from './auth/auth.module'
 import { Dish } from './restaurants/entities/dish.entity'
+import { OrdersModule } from './orders/orders.module'
+import {
+  Order,
+  OrderItem
+} from './orders/entities/order.entity'
+import { CommonModule } from './common/common.module'
 
 @Module({
   imports: [
+    CommonModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: isENV('dev') ? '.env.dev' : '.env.test',
@@ -65,14 +70,27 @@ import { Dish } from './restaurants/entities/dish.entity'
         Verification,
         Restaurant,
         Category,
-        Dish
+        Dish,
+        Order,
+        OrderItem
       ]
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      installSubscriptionHandlers: true,
+
       // autoSchemaFile: join(process.cwd(), 'src/schema.gql')
       autoSchemaFile: true,
-      context: ({ req }) => ({ user: req['user'] })
+      context: ({ req, connection }) => {
+        const TOKEN_KEY = 'x-jwt'
+        // delegate the whole thing to the guard
+        if (req) {
+          return { token: req.headers[TOKEN_KEY] }
+        } else if (connection) {
+          return { token: connection.context[TOKEN_KEY] }
+        }
+        return { token: null }
+      }
     }),
 
     RestaurantsModule,
@@ -80,7 +98,8 @@ import { Dish } from './restaurants/entities/dish.entity'
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY
     }),
-    AuthModule
+    AuthModule,
+    OrdersModule
   ],
   controllers: [],
   providers: []
@@ -92,10 +111,11 @@ export class AppModule implements NestModule {
     return this.dataSource
   }
 
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleware).forRoutes({
-      path: '*',
-      method: RequestMethod.ALL
-    })
+  configure(_consumer: MiddlewareConsumer) {
+    // middleware only applies to http middleware only applies to
+    // consumer.apply(JwtMiddleware).forRoutes({
+    //   path: '*',
+    //   method: RequestMethod.ALL
+    // })
   }
 }
