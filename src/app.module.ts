@@ -10,6 +10,7 @@ import {
 import { GraphQLModule } from '@nestjs/graphql'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
+import { ScheduleModule } from '@nestjs/schedule'
 import * as Joi from 'joi'
 import {
   generateEnvSchemaValidate,
@@ -32,6 +33,8 @@ import {
   OrderItem
 } from './orders/entities/order.entity'
 import { CommonModule } from './common/common.module'
+import { PaymentModule } from './payment/payment.module'
+import { Payment } from './payment/entities/payment.entity'
 
 @Module({
   imports: [
@@ -65,14 +68,14 @@ import { CommonModule } from './common/common.module'
       synchronize: !isENV('prod'), // update db when the model changes
       logging: false,
       entities: [
-        // Restaurant
         User,
         Verification,
         Restaurant,
         Category,
         Dish,
         Order,
-        OrderItem
+        OrderItem,
+        Payment
       ]
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -92,14 +95,15 @@ import { CommonModule } from './common/common.module'
         return { token: null }
       }
     }),
-
-    RestaurantsModule,
-    UsersModule,
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY
     }),
+    ScheduleModule.forRoot(),
+    RestaurantsModule,
+    UsersModule,
     AuthModule,
-    OrdersModule
+    OrdersModule,
+    PaymentModule
   ],
   controllers: [],
   providers: []

@@ -73,7 +73,10 @@ export class CategoryService {
           }
         },
         take: 25,
-        skip: (page - 1) * 25
+        skip: (page - 1) * 25,
+        order: {
+          isPromoted: 'DESC'
+        }
       })
 
     category.restaurants = restaurants

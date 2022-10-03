@@ -123,7 +123,10 @@ export class RestaurantService {
   async allRestaurants({ page }: RestaurantsInput) {
     return await this.restaurantRepository.findAndCount({
       skip: (page - 1) * 25,
-      take: 25
+      take: 25,
+      order: {
+        isPromoted: 'DESC'
+      }
     })
   }
 
